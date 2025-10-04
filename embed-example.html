@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Flow Widget - Embed Example</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .widget-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 900px;
+            border: none;
+            display: block;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .info-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10B981;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .code-box {
+            background: #1F2937;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            overflow-x: auto;
+        }
+
+        .code-box code {
+            color: #10B981;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            iframe {
+                height: 700px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Patient Flow Widget</h1>
+            <p>Seamless appointment booking experience</p>
+        </div>
+
+        <!-- Widget Embedded Here -->
+        <div class="widget-container">
+            <iframe
+                src="http://localhost:3001"
+                title="Patient Flow Widget"
+                allow="fullscreen"
+            ></iframe>
+        </div>
+
+        <!-- Information Box -->
+        <!-- <div class="info-box">
+            <h3>📋 How to Embed This Widget</h3>
+            <ul>
+                <li>Copy the iframe code below</li>
+                <li>Paste it into your website's HTML</li>
+                <li>Adjust width and height as needed</li>
+                <li>Update the src URL to your deployed widget URL</li>
+            </ul>
+
+            <div class="code-box">
+                <code>
+&lt;iframe<br>
+&nbsp;&nbsp;src="http://localhost:3001"<br>
+&nbsp;&nbsp;width="100%"<br>
+&nbsp;&nbsp;height="900px"<br>
+&nbsp;&nbsp;frameborder="0"<br>
+&nbsp;&nbsp;title="Patient Flow Widget"<br>
+&gt;&lt;/iframe&gt;
+                </code>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>🎨 Customization Options</h3>
+            <ul>
+                <li>Light/Dark theme support</li>
+                <li>Custom primary colors</li>
+                <li>Compact mode for smaller spaces</li>
+                <li>Callback functions for booking events</li>
+                <li>Pre-select specific doctors</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h3>⚡ Features</h3>
+            <ul>
+                <li>Step-by-step booking process</li>
+                <li>Real-time slot availability</li>
+                <li>Multiple appointment types</li>
+                <li>Instant booking confirmation</li>
+                <li>Mobile-responsive design</li>
+                <li>Modern Material-UI components</li>
+            </ul>
+        </div> -->
+    </div>
+</body>
+</html>
