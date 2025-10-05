@@ -15,12 +15,8 @@ import {
   CircularProgress,
   IconButton,
   Divider,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Checkbox,
-  FormControlLabel,
+  Chip,
+  Fade,
 } from '@mui/material';
 import {
   CheckCircle as CheckIcon,
@@ -32,17 +28,17 @@ import {
   AccessTime as TimeIcon,
   NavigateNext as NextIcon,
   NavigateBefore as PrevIcon,
-  Check as CheckMarkIcon,
-  Schedule as ScheduleIcon,
+  ArrowForward as ArrowForwardIcon,
+  Event as EventIcon,
 } from '@mui/icons-material';
 
 /**
- * Modern Appointment Booking Component - Techline Style
- * Based on Figma design with sidebar navigation and step-by-step process
+ * Modern Minimalistic Appointment Booking Component
+ * Clean, trendy design with smooth animations and excellent UX
  */
 const AppointmentBooking = ({
   apiUrl = 'http://localhost:5000/api',
-  primaryColor = '#0F5C5C',
+  primaryColor = '#0D9488',
   accentColor = '#10B981',
   onBookingComplete,
   defaultDoctorId = null,
@@ -53,7 +49,7 @@ const AppointmentBooking = ({
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [appointmentTypes, setAppointmentTypes] = useState([]);
   const [selectedType, setSelectedType] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -61,13 +57,8 @@ const AppointmentBooking = ({
     name: '',
     email: '',
     phone: '',
-    company: '',
-    position: '',
-    department: '',
     reason: '',
     notes: '',
-    interests: [],
-    contactPreference: 'email',
   });
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [confirmationData, setConfirmationData] = useState(null);
@@ -234,11 +225,9 @@ const AppointmentBooking = ({
     const startingDayOfWeek = firstDay.getDay();
 
     const days = [];
-    // Add empty slots for days before the month starts
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-    // Add all days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day));
     }
@@ -250,8 +239,13 @@ const AppointmentBooking = ({
     return date1.toDateString() === date2.toDateString();
   };
 
+  const isToday = (date) => {
+    if (!date) return false;
+    return isSameDay(date, new Date());
+  };
+
   const formatMonthYear = (date) => {
-    return date.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
   const changeMonth = (offset) => {
@@ -260,735 +254,858 @@ const AppointmentBooking = ({
     setSelectedMonth(newMonth);
   };
 
-  const renderSidebar = () => (
-    <Paper
-      sx={{
-        p: 3,
-        height: '100%',
-        bgcolor: '#FAFBFC',
-        borderRadius: '16px',
-        border: '1px solid #E5E7EB',
-      }}
-    >
-      {/* Doctor Info */}
-      <Stack spacing={2} sx={{ mb: 4 }}>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Avatar
-            sx={{
-              width: 56,
-              height: 56,
-              bgcolor: primaryColor,
-              fontSize: '1.5rem',
-              fontWeight: 700,
-            }}
-          >
-            {selectedDoctor?.name?.charAt(0) || 'T'}
-          </Avatar>
-          <Box>
-            <Typography variant="caption" sx={{ color: '#6B7280', display: 'block' }}>
-              {selectedDoctor ? 'Founder & Head of IT' : 'Techline'}
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#1F2937' }}>
-              {selectedDoctor ? selectedDoctor.name : 'Select Doctor'}
-            </Typography>
-          </Box>
-        </Stack>
-      </Stack>
-
-      <Divider sx={{ my: 2 }} />
-
-      {/* Step Indicators */}
-      <Stack spacing={2}>
-        {/* Step 1 - Tag/Appointment Type */}
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              bgcolor: currentStep >= 1 ? primaryColor : '#E5E7EB',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {currentStep > 1 ? (
-              <CheckMarkIcon sx={{ color: '#FFF', fontSize: 18 }} />
-            ) : (
-              <CalendarIcon sx={{ color: currentStep === 1 ? '#FFF' : '#9CA3AF', fontSize: 18 }} />
-            )}
-          </Box>
-          <Box flex={1}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: currentStep >= 1 ? '#1F2937' : '#9CA3AF' }}>
-              Schritt 1
-            </Typography>
-            <Typography variant="caption" sx={{ color: '#6B7280' }}>
-              Wählen Sie Ihren Wunschtermin aus.
-            </Typography>
-          </Box>
-        </Stack>
-
-        <Box sx={{ borderLeft: '2px dashed #E5E7EB', ml: 2, pl: 4, py: 1 }} />
-
-        {/* Step 2 - Date & Time */}
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              bgcolor: currentStep >= 2 ? primaryColor : '#E5E7EB',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {currentStep > 2 ? (
-              <CheckMarkIcon sx={{ color: '#FFF', fontSize: 18 }} />
-            ) : (
-              <TimeIcon sx={{ color: currentStep === 2 ? '#FFF' : '#9CA3AF', fontSize: 18 }} />
-            )}
-          </Box>
-          <Box flex={1}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: currentStep >= 2 ? '#1F2937' : '#9CA3AF' }}>
-              Uhrzeit
-            </Typography>
-            {selectedDate && currentStep >= 2 && (
-              <Typography variant="caption" sx={{ color: '#6B7280' }}>
-                {selectedDate.toLocaleDateString('de-DE')}
-                {selectedSlot && ` - ${new Date(selectedSlot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+  const renderProgressIndicator = () => (
+    <Box sx={{ mb: 6 }}>
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
+        {[
+          { step: 1, label: 'Select Doctor', icon: PersonIcon },
+          { step: 2, label: 'Choose Time', icon: CalendarIcon },
+          { step: 3, label: 'Your Details', icon: DescriptionIcon },
+          { step: 4, label: 'Confirmation', icon: CheckIcon },
+        ].map(({ step, label, icon: Icon }, index) => (
+          <React.Fragment key={step}>
+            <Stack alignItems="center" spacing={1}>
+              <Box
+                sx={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  bgcolor: currentStep >= step ? primaryColor : '#F3F4F6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.3s ease',
+                  boxShadow: currentStep === step ? `0 4px 12px ${primaryColor}40` : 'none',
+                }}
+              >
+                <Icon sx={{ color: currentStep >= step ? '#FFF' : '#9CA3AF', fontSize: 24 }} />
+              </Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: currentStep === step ? 600 : 400,
+                  color: currentStep >= step ? '#1F2937' : '#9CA3AF',
+                  fontSize: '0.75rem',
+                }}
+              >
+                {label}
               </Typography>
+            </Stack>
+            {index < 3 && (
+              <Box
+                sx={{
+                  flex: 1,
+                  height: 2,
+                  bgcolor: currentStep > step ? primaryColor : '#E5E7EB',
+                  transition: 'all 0.3s ease',
+                  borderRadius: 1,
+                  maxWidth: 80,
+                }}
+              />
             )}
-          </Box>
-        </Stack>
-
-        <Box sx={{ borderLeft: '2px dashed #E5E7EB', ml: 2, pl: 4, py: 1 }} />
-
-        {/* Step 3 - Information */}
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '50%',
-              bgcolor: currentStep >= 3 ? primaryColor : '#E5E7EB',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {currentStep > 3 ? (
-              <CheckMarkIcon sx={{ color: '#FFF', fontSize: 18 }} />
-            ) : (
-              <PersonIcon sx={{ color: currentStep === 3 ? '#FFF' : '#9CA3AF', fontSize: 18 }} />
-            )}
-          </Box>
-          <Box flex={1}>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: currentStep >= 3 ? '#1F2937' : '#9CA3AF' }}>
-              Information eingeben
-            </Typography>
-          </Box>
-        </Stack>
+          </React.Fragment>
+        ))}
       </Stack>
-
-      {/* Date Display */}
-      {selectedDate && currentStep >= 2 && (
-        <Box sx={{ mt: 4, p: 2, bgcolor: '#FFF', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
-          <Typography variant="caption" sx={{ color: '#6B7280', display: 'block', mb: 0.5 }}>
-            {selectedDate.toLocaleDateString('de-DE', { weekday: 'long' })}
-          </Typography>
-          <Typography variant="h6" sx={{ fontWeight: 700, color: primaryColor }}>
-            {selectedDate.getDate()}. {selectedDate.toLocaleDateString('de-DE', { month: 'long' })}
-          </Typography>
-        </Box>
-      )}
-    </Paper>
+    </Box>
   );
 
   const renderDoctorSelection = () => (
-    <Box>
-      <Typography variant="h4" sx={{ fontWeight: 700, color: '#1F2937', mb: 1 }}>
-        Datum & Uhrzeit wählen
-      </Typography>
-      <Typography variant="body1" sx={{ color: '#6B7280', mb: 4 }}>
-        Wählen Sie einen Berater aus
-      </Typography>
-
-      {loading ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <CircularProgress size={40} sx={{ color: primaryColor }} />
+    <Fade in timeout={500}>
+      <Box>
+        <Box sx={{ textAlign: 'center', mb: 5 }}>
+          <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', mb: 1.5 }}>
+            Choose Your Doctor
+          </Typography>
+          <Typography variant="body1" sx={{ color: '#64748B', fontSize: '1.125rem' }}>
+            Select a healthcare professional for your appointment
+          </Typography>
         </Box>
-      ) : (
-        <Grid container spacing={3}>
-          {doctors.map((doctor) => (
-            <Grid item xs={12} sm={6} md={4} key={doctor._id}>
-              <Card
-                onClick={() => handleDoctorSelect(doctor)}
-                sx={{
-                  cursor: 'pointer',
-                  border: `2px solid ${selectedDoctor?._id === doctor._id ? primaryColor : '#E5E7EB'}`,
-                  borderRadius: '16px',
-                  bgcolor: selectedDoctor?._id === doctor._id ? `${primaryColor}08` : '#FFF',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    borderColor: primaryColor,
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 24px rgba(15,92,92,0.15)',
-                  },
-                }}
-              >
-                <CardContent sx={{ p: 3 }}>
-                  <Stack spacing={2} alignItems="center">
+
+        {loading ? (
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <CircularProgress size={48} sx={{ color: primaryColor }} />
+          </Box>
+        ) : (
+          <Grid container spacing={3} justifyContent="center">
+            {doctors.map((doctor) => (
+              <Grid item xs={12} sm={6} md={4} key={doctor._id}>
+                <Card
+                  onClick={() => handleDoctorSelect(doctor)}
+                  sx={{
+                    cursor: 'pointer',
+                    border: `2px solid ${selectedDoctor?._id === doctor._id ? primaryColor : 'transparent'}`,
+                    borderRadius: '20px',
+                    bgcolor: '#FFF',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: selectedDoctor?._id === doctor._id
+                      ? `0 20px 40px ${primaryColor}20`
+                      : '0 4px 6px rgba(0,0,0,0.05)',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: `0 20px 40px ${primaryColor}20`,
+                      borderColor: primaryColor,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 4, textAlign: 'center' }}>
                     <Avatar
                       sx={{
-                        width: 72,
-                        height: 72,
-                        bgcolor: primaryColor,
+                        width: 80,
+                        height: 80,
+                        bgcolor: `${primaryColor}15`,
+                        color: primaryColor,
                         fontSize: '2rem',
                         fontWeight: 700,
+                        margin: '0 auto 16px',
+                        border: `3px solid ${primaryColor}30`,
                       }}
                     >
                       {doctor.name?.charAt(0)}
                     </Avatar>
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="caption" sx={{ color: '#6B7280', display: 'block', mb: 0.5 }}>
-                        {doctor.specialty || 'IT Consultant'}
-                      </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1F2937' }}>
-                        {doctor.name}
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
-    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A', mb: 0.5 }}>
+                      Dr. {doctor.name}
+                    </Typography>
+                    <Chip
+                      label={doctor.specialty || 'General Physician'}
+                      size="small"
+                      sx={{
+                        bgcolor: '#F1F5F9',
+                        color: '#475569',
+                        fontWeight: 500,
+                        fontSize: '0.75rem',
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Box>
+    </Fade>
   );
 
   const renderDateTimeSelection = () => (
-    <Box>
-      <Typography variant="h4" sx={{ fontWeight: 700, color: '#1F2937', mb: 1 }}>
-        Datum & Uhrzeit wählen
-      </Typography>
-      <Typography variant="body1" sx={{ color: '#6B7280', mb: 4 }}>
-        Wählen Sie Ihr bevorzugtes Datum und Ihre bevorzugte Uhrzeit
-      </Typography>
+    <Fade in timeout={500}>
+      <Box>
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', mb: 1.5 }}>
+            Pick a Date & Time
+          </Typography>
+          <Typography variant="body1" sx={{ color: '#64748B', fontSize: '1.125rem' }}>
+            Select your preferred appointment slot
+          </Typography>
+        </Box>
 
-      <Grid container spacing={4}>
-        {/* Calendar */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, borderRadius: '16px', border: '1px solid #E5E7EB' }}>
-            {/* Month Navigation */}
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-              <IconButton onClick={() => changeMonth(-1)} size="small">
-                <PrevIcon />
-              </IconButton>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1F2937' }}>
-                {formatMonthYear(selectedMonth)}
-              </Typography>
-              <IconButton onClick={() => changeMonth(1)} size="small" sx={{ bgcolor: primaryColor, '&:hover': { bgcolor: primaryColor } }}>
-                <NextIcon sx={{ color: '#FFF' }} />
-              </IconButton>
-            </Stack>
+        <Grid container spacing={3} justifyContent="center" sx={{ maxWidth: 900, mx: 'auto' }}>
+          {/* Calendar */}
+          <Grid item xs={12} sm={6} md={5}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: '16px',
+                bgcolor: '#FFF',
+                border: '1px solid #E5E7EB',
+                maxWidth: 380,
+              }}
+            >
+              {/* Month Navigation Header */}
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+                <IconButton
+                  onClick={() => changeMonth(-1)}
+                  size="small"
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: '#F3F4F6',
+                    '&:hover': {
+                      bgcolor: '#E5E7EB',
+                    }
+                  }}
+                >
+                  <PrevIcon sx={{ fontSize: 18 }} />
+                </IconButton>
 
-            {/* Weekday Headers */}
-            <Grid container spacing={1} sx={{ mb: 1 }}>
-              {['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'].map((day) => (
-                <Grid item xs key={day} sx={{ textAlign: 'center' }}>
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: '#6B7280' }}>
-                    {day}
-                  </Typography>
-                </Grid>
-              ))}
-            </Grid>
+                <Typography variant="body1" sx={{ fontWeight: 600, color: '#1F2937' }}>
+                  {selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </Typography>
 
-            {/* Calendar Days */}
-            <Grid container spacing={1}>
-              {getDaysInMonth(selectedMonth).map((day, index) => (
-                <Grid item xs key={index} sx={{ textAlign: 'center' }}>
-                  {day ? (
-                    <Button
-                      onClick={() => handleDateSelect(day)}
-                      disabled={day < new Date().setHours(0, 0, 0, 0)}
-                      sx={{
-                        minWidth: 0,
-                        width: '100%',
-                        aspectRatio: '1',
-                        borderRadius: '50%',
-                        p: 1,
-                        bgcolor: isSameDay(day, selectedDate) ? primaryColor : 'transparent',
-                        color: isSameDay(day, selectedDate) ? '#FFF' : day < new Date().setHours(0, 0, 0, 0) ? '#D1D5DB' : '#1F2937',
-                        fontWeight: isSameDay(day, selectedDate) ? 700 : 400,
-                        fontSize: '0.875rem',
-                        '&:hover': {
-                          bgcolor: isSameDay(day, selectedDate) ? primaryColor : '#F3F4F6',
-                        },
-                        '&.Mui-disabled': {
-                          color: '#D1D5DB',
-                        },
-                      }}
-                    >
-                      {day.getDate()}
-                    </Button>
-                  ) : (
-                    <Box sx={{ width: '100%', aspectRatio: '1' }} />
-                  )}
-                </Grid>
-              ))}
-            </Grid>
-          </Paper>
-        </Grid>
-
-        {/* Time Slots */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, borderRadius: '16px', border: '1px solid #E5E7EB', height: '100%' }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1F2937', mb: 2 }}>
-              {selectedDate.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </Typography>
-
-            {loading ? (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <CircularProgress size={32} sx={{ color: primaryColor }} />
-              </Box>
-            ) : availableSlots.length > 0 ? (
-              <Stack spacing={1.5} sx={{ maxHeight: 400, overflowY: 'auto', pr: 1 }}>
-                {availableSlots.map((slot) => (
-                  <Button
-                    key={slot._id}
-                    fullWidth
-                    variant={selectedSlot?._id === slot._id ? 'contained' : 'outlined'}
-                    onClick={() => handleSlotSelect(slot)}
-                    sx={{
-                      justifyContent: 'flex-start',
-                      py: 1.5,
-                      px: 2.5,
-                      borderRadius: '12px',
-                      borderWidth: 2,
-                      borderColor: selectedSlot?._id === slot._id ? primaryColor : '#E5E7EB',
-                      bgcolor: selectedSlot?._id === slot._id ? primaryColor : '#FFF',
-                      color: selectedSlot?._id === slot._id ? '#FFF' : '#1F2937',
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      '&:hover': {
-                        borderWidth: 2,
-                        borderColor: primaryColor,
-                        bgcolor: selectedSlot?._id === slot._id ? primaryColor : '#FAFBFC',
-                      },
-                    }}
-                  >
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <ScheduleIcon sx={{ fontSize: 20 }} />
-                      <Typography>
-                        {new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </Typography>
-                    </Stack>
-                  </Button>
-                ))}
+                <IconButton
+                  size="small"
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: '#0D9488',
+                    color: '#FFF',
+                    '&:hover': {
+                      bgcolor: '#0F766E',
+                    }
+                  }}
+                  onClick={() => changeMonth(1)}
+                >
+                  <NextIcon sx={{ fontSize: 18 }} />
+                </IconButton>
               </Stack>
-            ) : (
-              <Alert severity="info" sx={{ borderRadius: '12px' }}>
-                Keine Termine verfügbar für dieses Datum
-              </Alert>
-            )}
 
-            {selectedSlot && (
-              <Button
-                fullWidth
-                variant="contained"
-                onClick={handleNextStep}
-                disabled={!canProceedToNext()}
-                sx={{
-                  mt: 3,
-                  py: 1.5,
-                  borderRadius: '12px',
-                  bgcolor: primaryColor,
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  '&:hover': {
-                    bgcolor: primaryColor,
-                    opacity: 0.9,
-                  },
-                }}
-              >
-                Weiter
-              </Button>
-            )}
-          </Paper>
-        </Grid>
-      </Grid>
-    </Box>
-  );
+              {/* Weekday Headers */}
+              <Grid container spacing={0} sx={{ mb: 1.5 }}>
+                {['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'].map((day) => (
+                  <Grid item xs key={day}>
+                    <Box sx={{ textAlign: 'center', py: 1 }}>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontWeight: 500,
+                          color: '#6B7280',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {day}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
 
-  const renderInformationForm = () => (
-    <Box>
-      <Typography variant="h4" sx={{ fontWeight: 700, color: '#1F2937', mb: 1 }}>
-        Geben Sie Details ein
-      </Typography>
-      <Typography variant="body1" sx={{ color: '#6B7280', mb: 4 }}>
-        Bitte füllen Sie Ihre Informationen aus
-      </Typography>
+              {/* Calendar Days */}
+              <Grid container spacing={0}>
+                {getDaysInMonth(selectedMonth).map((day, index) => {
+                  const isPast = day && day < new Date().setHours(0, 0, 0, 0);
+                  const isSelected = day && isSameDay(day, selectedDate);
+                  const isTodayDate = day && isToday(day);
 
-      <Paper sx={{ p: 4, borderRadius: '16px', border: '1px solid #E5E7EB' }}>
-        <Stack spacing={3}>
-          {/* Name */}
-          <TextField
-            fullWidth
-            label="Name*"
-            placeholder="Ihr vollständiger Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            required
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '12px',
-                bgcolor: '#FAFBFC',
-              },
-            }}
-          />
-
-          {/* Email & Phone */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="E-Mail Adresse*"
-                type="email"
-                placeholder="ihre.email@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                    bgcolor: '#FAFBFC',
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Telefonnummer*"
-                placeholder="+49 123 456789"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                required
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                    bgcolor: '#FAFBFC',
-                  },
-                }}
-              />
-            </Grid>
+                  return (
+                    <Grid item xs key={index}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          py: 0.5,
+                        }}
+                      >
+                        {day ? (
+                          <Box
+                            sx={{
+                              position: 'relative',
+                              display: 'inline-flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Button
+                              onClick={() => !isPast && handleDateSelect(day)}
+                              disabled={isPast}
+                              sx={{
+                                minWidth: 40,
+                                width: 40,
+                                height: 40,
+                                borderRadius: '50%',
+                                p: 0,
+                                bgcolor: isSelected ? '#0D9488' : 'transparent',
+                                color: isSelected
+                                  ? '#FFF'
+                                  : isPast
+                                  ? '#D1D5DB'
+                                  : '#1F2937',
+                                fontWeight: isSelected ? 700 : 400,
+                                fontSize: '0.875rem',
+                                border: 'none',
+                                transition: 'all 0.2s ease',
+                                '&:hover:not(:disabled)': {
+                                  bgcolor: isSelected ? '#0D9488' : '#F3F4F6',
+                                },
+                                '&.Mui-disabled': {
+                                  color: '#E5E7EB',
+                                },
+                              }}
+                            >
+                              {day.getDate()}
+                            </Button>
+                            {/* Today indicator - yellow dot underneath */}
+                            {isTodayDate && (
+                              <Box
+                                sx={{
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: '50%',
+                                  bgcolor: '#FCD34D',
+                                  mt: 0.5,
+                                }}
+                              />
+                            )}
+                          </Box>
+                        ) : (
+                          <Box sx={{ width: 40, height: 40 }} />
+                        )}
+                      </Box>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </Paper>
           </Grid>
 
-          {/* Company & Position */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Unternehmen"
-                placeholder="Ihr Unternehmen"
-                value={formData.company}
-                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                    bgcolor: '#FAFBFC',
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Position"
-                placeholder="Ihre Position"
-                value={formData.position}
-                onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '12px',
-                    bgcolor: '#FAFBFC',
-                  },
-                }}
-              />
-            </Grid>
-          </Grid>
-
-          {/* Reason for Visit */}
-          <TextField
-            fullWidth
-            label="Grund Ihres Besuchs*"
-            placeholder="Beschreiben Sie kurz Ihr Anliegen"
-            value={formData.reason}
-            onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-            required
-            multiline
-            rows={4}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '12px',
-                bgcolor: '#FAFBFC',
-              },
-            }}
-          />
-
-          {/* Interests Section */}
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1F2937', mb: 2 }}>
-              Welche Lösung interessiert Sie am meisten? *
-            </Typography>
-            <Grid container spacing={2}>
-              {[
-                'MANAGED CLOUD',
-                'PRIVATE INFRASTRUCTURE',
-                'MANAGED KUBERNETES',
-                'COLOCATION / DATA CENTER',
-                'MANAGED DATABASES',
-                'MANAGED BACKUP',
-                'INFRASTRUCTURE CONSULTING',
-                'EMAIL & SHAREPOINT HOSTING',
-                'PRIVATE CONNECTIVITY',
-              ].map((interest) => (
-                <Grid item xs={12} sm={6} key={interest}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.interests.includes(interest)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setFormData({ ...formData, interests: [...formData.interests, interest] });
-                          } else {
-                            setFormData({ ...formData, interests: formData.interests.filter(i => i !== interest) });
+          {/* Time Slots and Appointment Type */}
+          <Grid item xs={12} sm={6} md={5}>
+            <Stack spacing={2.5}>
+              {/* Appointment Type Selection */}
+              {appointmentTypes.length > 0 && (
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1F2937', mb: 1.5, fontSize: '0.875rem' }}>
+                    Appointment Type
+                  </Typography>
+                  <Stack direction="row" spacing={1.5} flexWrap="wrap">
+                    {appointmentTypes.map((type) => (
+                      <Chip
+                        key={type._id}
+                        label={type.name}
+                        onClick={() => {
+                          setSelectedType(type._id);
+                          if (selectedDate && selectedDoctor) {
+                            loadSlots(selectedDoctor._id, selectedDate, type._id);
                           }
                         }}
                         sx={{
-                          color: '#D1D5DB',
-                          '&.Mui-checked': {
-                            color: primaryColor,
+                          borderRadius: '8px',
+                          border: `2px solid ${selectedType === type._id ? '#0D9488' : '#E5E7EB'}`,
+                          bgcolor: selectedType === type._id ? '#0D9488' : '#FFF',
+                          color: selectedType === type._id ? '#FFF' : '#6B7280',
+                          fontWeight: 600,
+                          fontSize: '0.75rem',
+                          px: 2,
+                          py: 1.5,
+                          height: 'auto',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            borderColor: '#0D9488',
+                            bgcolor: selectedType === type._id ? '#0D9488' : '#F9FAFB',
+                          },
+                          '& .MuiChip-label': {
+                            px: 0,
                           },
                         }}
                       />
-                    }
-                    label={<Typography variant="body2">{interest}</Typography>}
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+
+              {/* Selected Date Display */}
+              {selectedDate && (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    borderRadius: '12px',
+                    bgcolor: '#F9FAFB',
+                    border: '1px solid #E5E7EB',
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: '#6B7280', fontWeight: 500, fontSize: '0.8rem' }}>
+                    {selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}, {selectedDate.getDate()}. {selectedDate.toLocaleDateString('en-US', { month: 'long' })}
+                  </Typography>
+                </Paper>
+              )}
+
+              {/* Time Slots Header */}
+              {selectedDate && (
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1F2937', fontSize: '0.875rem' }}>
+                  Available Time Slots
+                </Typography>
+              )}
+
+              {/* Time Slot Buttons */}
+              {selectedDate ? (
+                loading ? (
+                  <Box sx={{ textAlign: 'center', py: 4 }}>
+                    <CircularProgress size={32} sx={{ color: '#0D9488' }} />
+                  </Box>
+                ) : availableSlots.length > 0 ? (
+                  <Stack spacing={1.5}>
+                    {availableSlots.map((slot) => (
+                      <Button
+                        key={slot._id}
+                        fullWidth
+                        variant={selectedSlot?._id === slot._id ? 'contained' : 'outlined'}
+                        onClick={() => handleSlotSelect(slot)}
+                        sx={{
+                          py: 1.5,
+                          borderRadius: '10px',
+                          border: `2px solid ${selectedSlot?._id === slot._id ? '#0D9488' : '#E5E7EB'}`,
+                          bgcolor: selectedSlot?._id === slot._id ? '#0D9488' : '#FFF',
+                          color: selectedSlot?._id === slot._id ? '#FFF' : '#1F2937',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          textTransform: 'none',
+                          justifyContent: 'center',
+                          '&:hover': {
+                            borderColor: '#0D9488',
+                            bgcolor: selectedSlot?._id === slot._id ? '#0D9488' : '#F9FAFB',
+                            borderWidth: '2px',
+                          },
+                        }}
+                      >
+                        {new Date(slot.startTime).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </Button>
+                    ))}
+
+                    {/* Weiter (Continue) Button */}
+                    {selectedSlot && (
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        onClick={handleNextStep}
+                        sx={{
+                          mt: 2,
+                          py: 1.5,
+                          borderRadius: '10px',
+                          bgcolor: '#0D9488',
+                          color: '#FFF',
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          textTransform: 'none',
+                          boxShadow: 'none',
+                          '&:hover': {
+                            bgcolor: '#0F766E',
+                            boxShadow: 'none',
+                          },
+                        }}
+                      >
+                        Continue
+                      </Button>
+                    )}
+                  </Stack>
+                ) : (
+                  <Alert
+                    severity="info"
+                    sx={{
+                      borderRadius: '10px',
+                      fontSize: '0.875rem',
+                    }}
+                  >
+                    No available slots for this date
+                  </Alert>
+                )
+              ) : (
+                <Box sx={{ textAlign: 'center', py: 6 }}>
+                  <CalendarIcon sx={{ fontSize: 48, color: '#D1D5DB', mb: 2 }} />
+                  <Typography variant="body2" sx={{ color: '#9CA3AF' }}>
+                    Select a date to view times
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
+          </Grid>
+        </Grid>
+      </Box>
+    </Fade>
+  );
+
+  const renderInformationForm = () => (
+    <Fade in timeout={500}>
+      <Box>
+        <Box sx={{ textAlign: 'center', mb: 5 }}>
+          <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', mb: 1.5 }}>
+            Your Information
+          </Typography>
+          <Typography variant="body1" sx={{ color: '#64748B', fontSize: '1.125rem' }}>
+            Please provide your contact details
+          </Typography>
+        </Box>
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: 5,
+            borderRadius: '24px',
+            border: '1px solid #F1F5F9',
+            bgcolor: '#FFF',
+            maxWidth: 600,
+            margin: '0 auto',
+          }}
+        >
+          <Stack spacing={3}>
+            <TextField
+              fullWidth
+              label="Full Name"
+              placeholder="Enter your full name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+              InputProps={{
+                startAdornment: <PersonIcon sx={{ color: '#94A3B8', mr: 1.5, fontSize: 22 }} />,
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '16px',
+                  bgcolor: '#FAFBFC',
+                  '& fieldset': {
+                    borderColor: '#E2E8F0',
+                    borderWidth: 2,
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#CBD5E1',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: primaryColor,
+                  },
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryColor,
+                },
+              }}
+            />
+
+            <TextField
+              fullWidth
+              label="Email Address"
+              type="email"
+              placeholder="your.email@example.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+              InputProps={{
+                startAdornment: <EmailIcon sx={{ color: '#94A3B8', mr: 1.5, fontSize: 22 }} />,
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '16px',
+                  bgcolor: '#FAFBFC',
+                  '& fieldset': {
+                    borderColor: '#E2E8F0',
+                    borderWidth: 2,
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#CBD5E1',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: primaryColor,
+                  },
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryColor,
+                },
+              }}
+            />
+
+            <TextField
+              fullWidth
+              label="Phone Number"
+              placeholder="+1 (555) 123-4567"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              required
+              InputProps={{
+                startAdornment: <PhoneIcon sx={{ color: '#94A3B8', mr: 1.5, fontSize: 22 }} />,
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '16px',
+                  bgcolor: '#FAFBFC',
+                  '& fieldset': {
+                    borderColor: '#E2E8F0',
+                    borderWidth: 2,
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#CBD5E1',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: primaryColor,
+                  },
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryColor,
+                },
+              }}
+            />
+
+            <TextField
+              fullWidth
+              label="Reason for Visit"
+              placeholder="Briefly describe your symptoms or reason for visit"
+              value={formData.reason}
+              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+              required
+              multiline
+              rows={4}
+              InputProps={{
+                startAdornment: (
+                  <DescriptionIcon
+                    sx={{
+                      color: '#94A3B8',
+                      mr: 1.5,
+                      fontSize: 22,
+                      alignSelf: 'flex-start',
+                      mt: 1.5,
+                    }}
                   />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '16px',
+                  bgcolor: '#FAFBFC',
+                  '& fieldset': {
+                    borderColor: '#E2E8F0',
+                    borderWidth: 2,
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#CBD5E1',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: primaryColor,
+                  },
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryColor,
+                },
+              }}
+            />
 
-          {/* Additional Notes */}
-          <TextField
-            fullWidth
-            label="Anmerkung"
-            placeholder="Weitere Informationen (optional)"
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            multiline
-            rows={3}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: '12px',
-                bgcolor: '#FAFBFC',
-              },
-            }}
-          />
+            <TextField
+              fullWidth
+              label="Additional Notes (Optional)"
+              placeholder="Any other information you'd like to share"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              multiline
+              rows={3}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '16px',
+                  bgcolor: '#FAFBFC',
+                  '& fieldset': {
+                    borderColor: '#E2E8F0',
+                    borderWidth: 2,
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#CBD5E1',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: primaryColor,
+                  },
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: primaryColor,
+                },
+              }}
+            />
 
-          {/* Submit Button */}
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={handleBookAppointment}
-            disabled={!canProceedToNext() || loading}
-            sx={{
-              py: 1.5,
-              borderRadius: '12px',
-              bgcolor: primaryColor,
-              fontWeight: 600,
-              fontSize: '1rem',
-              '&:hover': {
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleBookAppointment}
+              disabled={!canProceedToNext() || loading}
+              endIcon={loading ? null : <CheckIcon />}
+              sx={{
+                py: 2,
+                borderRadius: '16px',
                 bgcolor: primaryColor,
-                opacity: 0.9,
-              },
-            }}
-          >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'Termin Buchen'}
-          </Button>
-        </Stack>
-      </Paper>
-    </Box>
+                fontWeight: 600,
+                fontSize: '1.125rem',
+                textTransform: 'none',
+                boxShadow: `0 8px 16px ${primaryColor}30`,
+                '&:hover': {
+                  bgcolor: primaryColor,
+                  opacity: 0.9,
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 12px 24px ${primaryColor}40`,
+                },
+                '&.Mui-disabled': {
+                  bgcolor: '#E2E8F0',
+                  color: '#94A3B8',
+                },
+              }}
+            >
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Confirm Appointment'}
+            </Button>
+          </Stack>
+        </Paper>
+      </Box>
+    </Fade>
   );
 
   const renderConfirmation = () => (
-    <Box sx={{ textAlign: 'center', py: 4 }}>
-      <Box
-        sx={{
-          width: 100,
-          height: 100,
-          borderRadius: '50%',
-          bgcolor: accentColor,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto 24px',
-          boxShadow: '0 12px 32px rgba(16,185,129,0.3)',
-        }}
-      >
-        <CheckIcon sx={{ fontSize: 56, color: '#FFF' }} />
-      </Box>
-
-      <Typography variant="h3" sx={{ fontWeight: 700, color: '#1F2937', mb: 2 }}>
-        Termin bestätigt!
-      </Typography>
-      <Typography variant="body1" sx={{ color: '#6B7280', mb: 4 }}>
-        Ihre Buchung wurde erfolgreich abgeschlossen
-      </Typography>
-
-      <Paper
-        sx={{
-          p: 4,
-          borderRadius: '16px',
-          border: `2px solid ${accentColor}`,
-          bgcolor: '#ECFDF5',
-          maxWidth: 500,
-          margin: '0 auto',
-        }}
-      >
-        <Typography variant="caption" sx={{ color: '#6B7280', display: 'block', mb: 1 }}>
-          Buchungs-ID
-        </Typography>
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: '#1F2937' }}>
-          #{confirmationData?.appointmentId?.substring(0, 8).toUpperCase()}
-        </Typography>
-
-        <Divider sx={{ my: 3 }} />
-
-        <Stack spacing={3} sx={{ textAlign: 'left' }}>
-          <Box>
-            <Typography variant="caption" sx={{ color: '#6B7280', display: 'block', mb: 0.5 }}>
-              Berater
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1F2937' }}>
-              {confirmationData?.doctor.name}
-            </Typography>
-          </Box>
-
-          <Box>
-            <Typography variant="caption" sx={{ color: '#6B7280', display: 'block', mb: 0.5 }}>
-              Datum & Uhrzeit
-            </Typography>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#1F2937' }}>
-              {new Date(confirmationData?.date).toLocaleDateString('de-DE', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </Typography>
-            <Typography variant="body1" sx={{ fontWeight: 600, color: primaryColor, mt: 0.5 }}>
-              {confirmationData?.time}
-            </Typography>
-          </Box>
-
-          <Box>
-            <Typography variant="caption" sx={{ color: '#6B7280', display: 'block', mb: 0.5 }}>
-              Kontakt
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#1F2937' }}>
-              {confirmationData?.patient.name}
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#6B7280' }}>
-              {confirmationData?.patient.email}
-            </Typography>
-          </Box>
-        </Stack>
-      </Paper>
-
-      <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 4 }}>
-        <Button
-          variant="outlined"
-          onClick={() => window.location.reload()}
+    <Fade in timeout={800}>
+      <Box sx={{ textAlign: 'center', py: 4 }}>
+        <Box
           sx={{
-            borderRadius: '12px',
-            px: 4,
-            py: 1.5,
-            borderColor: primaryColor,
-            color: primaryColor,
-            fontWeight: 600,
-            borderWidth: 2,
-            '&:hover': {
+            width: 120,
+            height: 120,
+            borderRadius: '50%',
+            bgcolor: `${accentColor}15`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px',
+            animation: 'scaleIn 0.5s ease-out',
+            '@keyframes scaleIn': {
+              from: { transform: 'scale(0)', opacity: 0 },
+              to: { transform: 'scale(1)', opacity: 1 },
+            },
+          }}
+        >
+          <CheckIcon sx={{ fontSize: 72, color: accentColor }} />
+        </Box>
+
+        <Typography variant="h2" sx={{ fontWeight: 800, color: '#0F172A', mb: 2 }}>
+          All Set!
+        </Typography>
+        <Typography variant="h6" sx={{ color: '#64748B', mb: 5, fontWeight: 400 }}>
+          Your appointment has been confirmed
+        </Typography>
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: 5,
+            borderRadius: '24px',
+            border: `2px solid ${accentColor}40`,
+            bgcolor: `${accentColor}05`,
+            maxWidth: 550,
+            margin: '0 auto 40px',
+          }}
+        >
+          <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mb: 1 }}>
+            Booking Reference
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800, mb: 4, color: '#0F172A', letterSpacing: 1 }}>
+            #{confirmationData?.appointmentId?.substring(0, 8).toUpperCase()}
+          </Typography>
+
+          <Divider sx={{ my: 3 }} />
+
+          <Stack spacing={3} sx={{ textAlign: 'left' }}>
+            <Box>
+              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
+                <PersonIcon sx={{ color: primaryColor, fontSize: 20 }} />
+                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                  Doctor
+                </Typography>
+              </Stack>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A', pl: 4 }}>
+                Dr. {confirmationData?.doctor.name}
+              </Typography>
+            </Box>
+
+            <Box>
+              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
+                <CalendarIcon sx={{ color: primaryColor, fontSize: 20 }} />
+                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                  Date & Time
+                </Typography>
+              </Stack>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A', pl: 4 }}>
+                {new Date(confirmationData?.date).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </Typography>
+              <Typography variant="body1" sx={{ fontWeight: 600, color: primaryColor, pl: 4, mt: 0.5 }}>
+                {confirmationData?.time}
+              </Typography>
+            </Box>
+
+            <Box>
+              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1 }}>
+                <EmailIcon sx={{ color: primaryColor, fontSize: 20 }} />
+                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.7rem' }}>
+                  Contact
+                </Typography>
+              </Stack>
+              <Typography variant="body1" sx={{ color: '#475569', pl: 4 }}>
+                {confirmationData?.patient.name}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#64748B', pl: 4 }}>
+                {confirmationData?.patient.email}
+              </Typography>
+            </Box>
+          </Stack>
+        </Paper>
+
+        <Stack direction="row" spacing={3} justifyContent="center">
+          <Button
+            variant="outlined"
+            onClick={() => window.location.reload()}
+            sx={{
+              borderRadius: '16px',
+              px: 4,
+              py: 1.5,
+              borderColor: '#E2E8F0',
+              color: '#475569',
+              fontWeight: 600,
               borderWidth: 2,
-              borderColor: primaryColor,
-            },
-          }}
-        >
-          Neuer Termin
-        </Button>
-        <Button
-          variant="contained"
-          sx={{
-            borderRadius: '12px',
-            px: 4,
-            py: 1.5,
-            bgcolor: primaryColor,
-            fontWeight: 600,
-            '&:hover': {
+              textTransform: 'none',
+              '&:hover': {
+                borderWidth: 2,
+                borderColor: '#CBD5E1',
+                bgcolor: '#F8FAFC',
+              },
+            }}
+          >
+            Book Another
+          </Button>
+          <Button
+            variant="contained"
+            sx={{
+              borderRadius: '16px',
+              px: 4,
+              py: 1.5,
               bgcolor: primaryColor,
-              opacity: 0.9,
-            },
-          }}
-        >
-          Zum Kalender
-        </Button>
-      </Stack>
-    </Box>
+              fontWeight: 600,
+              textTransform: 'none',
+              boxShadow: `0 8px 16px ${primaryColor}30`,
+              '&:hover': {
+                bgcolor: primaryColor,
+                opacity: 0.9,
+                transform: 'translateY(-2px)',
+                boxShadow: `0 12px 24px ${primaryColor}40`,
+              },
+            }}
+          >
+            View Calendar
+          </Button>
+        </Stack>
+      </Box>
+    </Fade>
   );
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#F9FAFB', py: 4 }}>
-      <Container maxWidth="xl">
+    <Box sx={{ minHeight: '100vh', bgcolor: '#FFFFFF', py: 6 }}>
+      <Container maxWidth="lg">
+        {/* Progress Indicator */}
+        {!bookingConfirmed && renderProgressIndicator()}
+
         {/* Error Alert */}
         {error && (
           <Alert
             severity="error"
             onClose={() => setError('')}
-            sx={{ mb: 3, borderRadius: '12px' }}
+            sx={{
+              mb: 4,
+              borderRadius: '16px',
+              border: '1px solid #FEE2E2',
+              bgcolor: '#FEF2F2',
+            }}
           >
             {error}
           </Alert>
         )}
 
-        <Grid container spacing={3}>
-          {/* Sidebar */}
-          {currentStep > 1 && (
-            <Grid item xs={12} md={3}>
-              {renderSidebar()}
-            </Grid>
-          )}
-
-          {/* Main Content */}
-          <Grid item xs={12} md={currentStep > 1 ? 9 : 12}>
-            <Paper
-              sx={{
-                p: 4,
-                borderRadius: '16px',
-                border: '1px solid #E5E7EB',
-                bgcolor: '#FFF',
-                minHeight: 600,
-              }}
-            >
-              {currentStep === 1 && renderDoctorSelection()}
-              {currentStep === 2 && renderDateTimeSelection()}
-              {currentStep === 3 && renderInformationForm()}
-              {currentStep === 4 && renderConfirmation()}
-            </Paper>
-          </Grid>
-        </Grid>
+        {/* Main Content */}
+        <Box>
+          {currentStep === 1 && renderDoctorSelection()}
+          {currentStep === 2 && renderDateTimeSelection()}
+          {currentStep === 3 && renderInformationForm()}
+          {currentStep === 4 && renderConfirmation()}
+        </Box>
       </Container>
     </Box>
   );

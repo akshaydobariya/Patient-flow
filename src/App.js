@@ -6,7 +6,9 @@ import CssBaseline from '@mui/material/CssBaseline';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#0F5C5C',
+      main: '#0D9488',
+      light: '#14B8A6',
+      dark: '#0F766E',
     },
     secondary: {
       main: '#10B981',
@@ -14,6 +16,9 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontWeightRegular: 400,
+    fontWeightMedium: 500,
+    fontWeightBold: 700,
   },
 });
 
@@ -28,7 +33,7 @@ function App() {
       <CssBaseline />
       <AppointmentBooking
         apiUrl={process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}
-        primaryColor="#0F5C5C"
+        primaryColor="#0D9488"
         accentColor="#10B981"
         onBookingComplete={handleBookingComplete}
       />
