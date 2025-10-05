@@ -117,18 +117,52 @@ const PatientFlowWidget = ({
   const loadSlots = async (doctorId, date, typeId) => {
     try {
       setLoading(true);
-      const startDate = new Date(date + 'T00:00:00.000Z');
-      const endDate = new Date(date + 'T23:59:59.999Z');
 
-      const response = await fetch(
-        `${apiUrl}/calendar/slots?doctorId=${doctorId}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
-      );
-      const data = await response.json();
+      // Create date range for the selected date
+      const selectedDate = new Date(date);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      const startDate = new Date(selectedDate);
+      const endDate = new Date(selectedDate);
+      endDate.setHours(23, 59, 59, 999);
 
       const typeName = appointmentTypes.find(t => t._id === typeId)?.name;
-      const filtered = data.slots?.filter(
-        slot => slot.isAvailable && slot.type === typeName
-      ) || [];
+
+      let url = `${apiUrl}/calendar/slots?doctorId=${doctorId}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
+      if (typeName) {
+        url += `&appointmentType=${encodeURIComponent(typeName)}`;
+      }
+
+      console.log('Loading slots:', {
+        date,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        typeName,
+        url
+      });
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      console.log('API Response:', {
+        slotsReceived: data.slots?.length || 0,
+        rules: data.rules,
+        count: data.count
+      });
+
+      // Filter slots - backend already applies rules
+      const filtered = data.slots?.filter(slot => slot.isAvailable) || [];
+
+      console.log('Filtered slots:', filtered.length);
+
+      if (filtered.length > 0) {
+        console.log('Sample slots:', filtered.slice(0, 3).map(s => ({
+          start: s.startTime,
+          end: s.endTime,
+          type: s.type,
+          available: s.isAvailable
+        })));
+      }
 
       setAvailableSlots(filtered);
     } catch (error) {
@@ -391,23 +425,27 @@ const PatientFlowWidget = ({
             ) : availableSlots.length > 0 ? (
               <Grid container spacing={1.5}>
                 {availableSlots.map((slot) => (
-                  <Grid item xs={4} sm={3} key={slot._id}>
+                  <Grid item xs={6} sm={4} md={3} key={slot._id}>
                     <Button
                       fullWidth
                       variant={selectedSlot?._id === slot._id ? 'contained' : 'outlined'}
                       onClick={() => handleSlotSelect(slot)}
                       sx={{
                         py: 1.5,
-                        borderRadius: '8px',
+                        borderRadius: '10px',
                         borderWidth: 2,
-                        borderColor: selectedSlot?._id === slot._id ? primaryColor : borderColor,
+                        border: `2px solid ${selectedSlot?._id === slot._id ? primaryColor : borderColor}`,
                         bgcolor: selectedSlot?._id === slot._id ? primaryColor : 'transparent',
                         color: selectedSlot?._id === slot._id ? '#FFF' : textColor,
                         fontSize: '0.875rem',
                         fontWeight: 600,
+                        textTransform: 'none',
+                        transition: 'all 0.2s ease',
                         '&:hover': {
                           borderWidth: 2,
                           borderColor: primaryColor,
+                          transform: 'translateY(-2px)',
+                          boxShadow: `0 4px 12px ${primaryColor}30`,
                         },
                       }}
                     >

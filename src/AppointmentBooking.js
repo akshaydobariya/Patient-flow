@@ -107,19 +107,52 @@ const AppointmentBooking = ({
   const loadSlots = async (doctorId, date, typeId) => {
     try {
       setLoading(true);
-      const dateStr = date.toISOString().split('T')[0];
-      const startDate = new Date(dateStr + 'T00:00:00.000Z');
-      const endDate = new Date(dateStr + 'T23:59:59.999Z');
 
-      const response = await fetch(
-        `${apiUrl}/calendar/slots?doctorId=${doctorId}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
-      );
-      const data = await response.json();
+      // Create date range for the selected date
+      const selectedDate = new Date(date);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      const startDate = new Date(selectedDate);
+      const endDate = new Date(selectedDate);
+      endDate.setHours(23, 59, 59, 999);
 
       const typeName = appointmentTypes.find(t => t._id === typeId)?.name;
-      const filtered = data.slots?.filter(
-        slot => slot.isAvailable && slot.type === typeName
-      ) || [];
+
+      let url = `${apiUrl}/calendar/slots?doctorId=${doctorId}&startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`;
+      if (typeName) {
+        url += `&appointmentType=${encodeURIComponent(typeName)}`;
+      }
+
+      console.log('Loading slots:', {
+        date: date.toISOString(),
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        typeName,
+        url
+      });
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      console.log('API Response:', {
+        slotsReceived: data.slots?.length || 0,
+        rules: data.rules,
+        count: data.count
+      });
+
+      // Filter slots - backend already applies rules
+      const filtered = data.slots?.filter(slot => slot.isAvailable) || [];
+
+      console.log('Filtered slots:', filtered.length);
+
+      if (filtered.length > 0) {
+        console.log('Sample slots:', filtered.slice(0, 3).map(s => ({
+          start: s.startTime,
+          end: s.endTime,
+          type: s.type,
+          available: s.isAvailable
+        })));
+      }
 
       setAvailableSlots(filtered);
     } catch (error) {
@@ -397,45 +430,45 @@ const AppointmentBooking = ({
           </Typography>
         </Box>
 
-        <Grid container spacing={3} justifyContent="center" sx={{ maxWidth: 900, mx: 'auto' }}>
+        <Grid container spacing={4} sx={{ maxWidth: 1200, mx: 'auto' }}>
           {/* Calendar */}
-          <Grid item xs={12} sm={6} md={5}>
+          <Grid item xs={12} md={5}>
             <Paper
               elevation={0}
               sx={{
-                p: 2.5,
+                p: { xs: 2, sm: 2, md: 2 },
                 borderRadius: '16px',
                 bgcolor: '#FFF',
                 border: '1px solid #E5E7EB',
-                maxWidth: 380,
+                maxWidth: 400,
               }}
             >
               {/* Month Navigation Header */}
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: { xs: 2, md: 2.5 } }}>
                 <IconButton
                   onClick={() => changeMonth(-1)}
                   size="small"
                   sx={{
-                    width: 32,
-                    height: 32,
+                    width: { xs: 28, sm: 32 },
+                    height: { xs: 28, sm: 32 },
                     bgcolor: '#F3F4F6',
                     '&:hover': {
                       bgcolor: '#E5E7EB',
                     }
                   }}
                 >
-                  <PrevIcon sx={{ fontSize: 18 }} />
+                  <PrevIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                 </IconButton>
 
-                <Typography variant="body1" sx={{ fontWeight: 600, color: '#1F2937' }}>
+                <Typography variant="body1" sx={{ fontWeight: 600, color: '#1F2937', fontSize: { xs: '0.85rem', sm: '1rem' } }}>
                   {selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </Typography>
 
                 <IconButton
                   size="small"
                   sx={{
-                    width: 32,
-                    height: 32,
+                    width: { xs: 28, sm: 32 },
+                    height: { xs: 28, sm: 32 },
                     bgcolor: '#0D9488',
                     color: '#FFF',
                     '&:hover': {
@@ -444,21 +477,21 @@ const AppointmentBooking = ({
                   }}
                   onClick={() => changeMonth(1)}
                 >
-                  <NextIcon sx={{ fontSize: 18 }} />
+                  <NextIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                 </IconButton>
               </Stack>
 
               {/* Weekday Headers */}
-              <Grid container spacing={0} sx={{ mb: 1.5 }}>
+              <Grid container spacing={0} sx={{ mb: { xs: 1, md: 1.5 } }}>
                 {['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'].map((day) => (
                   <Grid item xs key={day}>
-                    <Box sx={{ textAlign: 'center', py: 1 }}>
+                    <Box sx={{ textAlign: 'center', py: { xs: 0.5, md: 0.75 } }}>
                       <Typography
                         variant="caption"
                         sx={{
                           fontWeight: 500,
                           color: '#6B7280',
-                          fontSize: '0.75rem',
+                          fontSize: { xs: '0.7rem', md: '0.75rem' },
                         }}
                       >
                         {day}
@@ -482,7 +515,7 @@ const AppointmentBooking = ({
                           display: 'flex',
                           justifyContent: 'center',
                           alignItems: 'center',
-                          py: 0.5,
+                          py: { xs: 0.3, md: 0.4 },
                         }}
                       >
                         {day ? (
@@ -498,9 +531,9 @@ const AppointmentBooking = ({
                               onClick={() => !isPast && handleDateSelect(day)}
                               disabled={isPast}
                               sx={{
-                                minWidth: 40,
-                                width: 40,
-                                height: 40,
+                                minWidth: { xs: 32, sm: 34, md: 36 },
+                                width: { xs: 32, sm: 34, md: 36 },
+                                height: { xs: 32, sm: 34, md: 36 },
                                 borderRadius: '50%',
                                 p: 0,
                                 bgcolor: isSelected ? '#0D9488' : 'transparent',
@@ -510,7 +543,7 @@ const AppointmentBooking = ({
                                   ? '#D1D5DB'
                                   : '#1F2937',
                                 fontWeight: isSelected ? 700 : 400,
-                                fontSize: '0.875rem',
+                                fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.875rem' },
                                 border: 'none',
                                 transition: 'all 0.2s ease',
                                 '&:hover:not(:disabled)': {
@@ -527,17 +560,17 @@ const AppointmentBooking = ({
                             {isTodayDate && (
                               <Box
                                 sx={{
-                                  width: 6,
-                                  height: 6,
+                                  width: 5,
+                                  height: 5,
                                   borderRadius: '50%',
                                   bgcolor: '#FCD34D',
-                                  mt: 0.5,
+                                  mt: 0.3,
                                 }}
                               />
                             )}
                           </Box>
                         ) : (
-                          <Box sx={{ width: 40, height: 40 }} />
+                          <Box sx={{ width: { xs: 32, sm: 34, md: 36 }, height: { xs: 32, sm: 34, md: 36 } }} />
                         )}
                       </Box>
                     </Grid>
@@ -548,7 +581,7 @@ const AppointmentBooking = ({
           </Grid>
 
           {/* Time Slots and Appointment Type */}
-          <Grid item xs={12} sm={6} md={5}>
+          <Grid item xs={12} md={7}>
             <Stack spacing={2.5}>
               {/* Appointment Type Selection */}
               {appointmentTypes.length > 0 && (
@@ -556,7 +589,7 @@ const AppointmentBooking = ({
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1F2937', mb: 1.5, fontSize: '0.875rem' }}>
                     Appointment Type
                   </Typography>
-                  <Stack direction="row" spacing={1.5} flexWrap="wrap">
+                  <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
                     {appointmentTypes.map((type) => (
                       <Chip
                         key={type._id}
@@ -568,19 +601,21 @@ const AppointmentBooking = ({
                           }
                         }}
                         sx={{
-                          borderRadius: '8px',
+                          borderRadius: '10px',
                           border: `2px solid ${selectedType === type._id ? '#0D9488' : '#E5E7EB'}`,
                           bgcolor: selectedType === type._id ? '#0D9488' : '#FFF',
                           color: selectedType === type._id ? '#FFF' : '#6B7280',
                           fontWeight: 600,
-                          fontSize: '0.75rem',
-                          px: 2,
-                          py: 1.5,
+                          fontSize: '0.813rem',
+                          px: 2.5,
+                          py: 2,
                           height: 'auto',
                           cursor: 'pointer',
+                          transition: 'all 0.2s ease',
                           '&:hover': {
                             borderColor: '#0D9488',
                             bgcolor: selectedType === type._id ? '#0D9488' : '#F9FAFB',
+                            transform: 'translateY(-1px)',
                           },
                           '& .MuiChip-label': {
                             px: 0,
@@ -603,7 +638,7 @@ const AppointmentBooking = ({
                     border: '1px solid #E5E7EB',
                   }}
                 >
-                  <Typography variant="body2" sx={{ color: '#6B7280', fontWeight: 500, fontSize: '0.8rem' }}>
+                  <Typography variant="body2" sx={{ color: '#6B7280', fontWeight: 500, fontSize: '0.85rem' }}>
                     {selectedDate.toLocaleDateString('en-US', { weekday: 'long' })}, {selectedDate.getDate()}. {selectedDate.toLocaleDateString('en-US', { month: 'long' })}
                   </Typography>
                 </Paper>
@@ -623,45 +658,77 @@ const AppointmentBooking = ({
                     <CircularProgress size={32} sx={{ color: '#0D9488' }} />
                   </Box>
                 ) : availableSlots.length > 0 ? (
-                  <Stack spacing={1.5}>
-                    {availableSlots.map((slot) => (
-                      <Button
-                        key={slot._id}
-                        fullWidth
-                        variant={selectedSlot?._id === slot._id ? 'contained' : 'outlined'}
-                        onClick={() => handleSlotSelect(slot)}
-                        sx={{
-                          py: 1.5,
+                  <Box sx={{
+                    maxWidth:650
+                  }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: 1.2,
+                        mb: 2,
+                        maxHeight: 350,
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        pr: 1,
+                        '&::-webkit-scrollbar': {
+                          width: '6px',
+                        },
+                        '&::-webkit-scrollbar-track': {
+                          bgcolor: '#F3F4F6',
                           borderRadius: '10px',
-                          border: `2px solid ${selectedSlot?._id === slot._id ? '#0D9488' : '#E5E7EB'}`,
-                          bgcolor: selectedSlot?._id === slot._id ? '#0D9488' : '#FFF',
-                          color: selectedSlot?._id === slot._id ? '#FFF' : '#1F2937',
-                          fontWeight: 600,
-                          fontSize: '0.875rem',
-                          textTransform: 'none',
-                          justifyContent: 'center',
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                          bgcolor: '#D1D5DB',
+                          borderRadius: '10px',
                           '&:hover': {
-                            borderColor: '#0D9488',
-                            bgcolor: selectedSlot?._id === slot._id ? '#0D9488' : '#F9FAFB',
-                            borderWidth: '2px',
+                            bgcolor: '#9CA3AF',
                           },
-                        }}
-                      >
-                        {new Date(slot.startTime).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </Button>
-                    ))}
+                        },
+                      }}
+                    >
+                      {availableSlots.map((slot) => (
+                        <Button
+                          key={slot._id}
+                          variant={selectedSlot?._id === slot._id ? 'contained' : 'outlined'}
+                          onClick={() => handleSlotSelect(slot)}
+                          sx={{
+                            minWidth: 'auto',
+                            width: 'auto',
+                            px: 1.8,
+                            py: 0.8,
+                            borderRadius: '8px',
+                            border: `2px solid ${selectedSlot?._id === slot._id ? '#0D9488' : '#E5E7EB'}`,
+                            bgcolor: selectedSlot?._id === slot._id ? '#0D9488' : '#FFF',
+                            color: selectedSlot?._id === slot._id ? '#FFF' : '#1F2937',
+                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            textTransform: 'none',
+                            flexShrink: 0,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              borderColor: '#0D9488',
+                              bgcolor: selectedSlot?._id === slot._id ? '#0D9488' : '#F9FAFB',
+                              borderWidth: '2px',
+                            },
+                          }}
+                        >
+                          {new Date(slot.startTime).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </Button>
+                      ))}
+                    </Box>
 
-                    {/* Weiter (Continue) Button */}
+                    {/* Continue Button */}
                     {selectedSlot && (
                       <Button
                         fullWidth
                         variant="contained"
                         onClick={handleNextStep}
                         sx={{
-                          mt: 2,
+                          mt: 1,
                           py: 1.5,
                           borderRadius: '10px',
                           bgcolor: '#0D9488',
@@ -669,28 +736,29 @@ const AppointmentBooking = ({
                           fontWeight: 600,
                           fontSize: '0.875rem',
                           textTransform: 'none',
-                          boxShadow: 'none',
+                          boxShadow: '0 4px 12px rgba(13, 148, 136, 0.25)',
                           '&:hover': {
                             bgcolor: '#0F766E',
-                            boxShadow: 'none',
+                            boxShadow: '0 6px 16px rgba(13, 148, 136, 0.35)',
+                            transform: 'translateY(-2px)',
                           },
                         }}
                       >
                         Continue
                       </Button>
                     )}
-                  </Stack>
-                ) : (
-                  <Alert
-                    severity="info"
-                    sx={{
-                      borderRadius: '10px',
-                      fontSize: '0.875rem',
-                    }}
-                  >
-                    No available slots for this date
-                  </Alert>
-                )
+                  </Box>
+              ) : (
+                <Alert
+                  severity="info"
+                  sx={{
+                    borderRadius: '10px',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  No available slots for this date
+                </Alert>
+              )
               ) : (
                 <Box sx={{ textAlign: 'center', py: 6 }}>
                   <CalendarIcon sx={{ fontSize: 48, color: '#D1D5DB', mb: 2 }} />
