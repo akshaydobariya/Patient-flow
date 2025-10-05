@@ -1,13 +1,19 @@
 import React from 'react';
-import PatientFlowWidget from './PatientFlowWidget';
+import AppointmentBooking from './AppointmentBooking';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#0EA5E9',
+      main: '#0F5C5C',
     },
+    secondary: {
+      main: '#10B981',
+    },
+  },
+  typography: {
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
 });
 
@@ -20,13 +26,11 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <PatientFlowWidget
+      <AppointmentBooking
         apiUrl={process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}
-        theme="light"
-        primaryColor="#0EA5E9"
-        compact={false}
+        primaryColor="#0F5C5C"
+        accentColor="#10B981"
         onBookingComplete={handleBookingComplete}
-        showHeader={true}
       />
     </ThemeProvider>
   );
