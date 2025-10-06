@@ -1120,7 +1120,7 @@ const AppointmentBooking = ({
           >
             Book Another
           </Button>
-          <Button
+          {/* <Button
             variant="contained"
             sx={{
               borderRadius: '16px',
@@ -1139,7 +1139,7 @@ const AppointmentBooking = ({
             }}
           >
             View Calendar
-          </Button>
+          </Button> */}
         </Stack>
       </Box>
     </Fade>
