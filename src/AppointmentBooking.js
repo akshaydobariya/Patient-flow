@@ -169,6 +169,21 @@ const AppointmentBooking = ({
     setCurrentStep(2);
   };
 
+  const handleBackToStep = (step) => {
+    setCurrentStep(step);
+    // Clear data for future steps when going back
+    if (step === 1) {
+      setSelectedDoctor(null);
+      setSelectedDate(null);
+      setSelectedSlot(null);
+      setSelectedType(null);
+      setAppointmentTypes([]);
+      setAvailableSlots([]);
+    } else if (step === 2) {
+      setSelectedSlot(null);
+    }
+  };
+
   const handleDateSelect = (date) => {
     setSelectedDate(date);
     setSelectedSlot(null);
@@ -421,7 +436,21 @@ const AppointmentBooking = ({
   const renderDateTimeSelection = () => (
     <Fade in timeout={500}>
       <Box>
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Box sx={{ textAlign: 'center', mb: 4, position: 'relative' }}>
+          <IconButton
+            onClick={() => handleBackToStep(1)}
+            sx={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bgcolor: '#F3F4F6',
+              '&:hover': {
+                bgcolor: '#E5E7EB',
+              },
+            }}
+          >
+            <PrevIcon />
+          </IconButton>
           <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', mb: 1.5 }}>
             Pick a Date & Time
           </Typography>
@@ -777,7 +806,21 @@ const AppointmentBooking = ({
   const renderInformationForm = () => (
     <Fade in timeout={500}>
       <Box>
-        <Box sx={{ textAlign: 'center', mb: 5 }}>
+        <Box sx={{ textAlign: 'center', mb: 5, position: 'relative' }}>
+          <IconButton
+            onClick={() => handleBackToStep(2)}
+            sx={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bgcolor: '#F3F4F6',
+              '&:hover': {
+                bgcolor: '#E5E7EB',
+              },
+            }}
+          >
+            <PrevIcon />
+          </IconButton>
           <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', mb: 1.5 }}>
             Your Information
           </Typography>
